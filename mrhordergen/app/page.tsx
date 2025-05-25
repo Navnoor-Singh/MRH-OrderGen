@@ -332,18 +332,18 @@ export default function OrderPage() {
       setWidth("");
       setType("");
     }
-    
+
     if (rimSizes.length > 0 && !rimSizes.includes(rim)) {
       setRim(rimSizes[0]);
       setWidth("");
       setType("");
     }
-    
+
     if (widths.length > 0 && !widths.includes(width)) {
       setWidth(widths[0]);
       setType("");
     }
-    
+
     if (types.length > 0 && !types.includes(type)) {
       setType(types[0]);
     }
@@ -371,69 +371,69 @@ export default function OrderPage() {
     } else {
       text = `${prefix} ${category} ${rim}x${width} ${type} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
     }
-    
+
     setOrders([...orders, { category, text }]);
     resetForm();
   };
 
   const copyOrder = async () => {
-  const orderLines = [
-    "Order From Satvinder Singh",
-    `Party Name: ${orderFrom}`,
-    "",
-  ];
+    const orderLines = [
+      "Order From Satvinder Singh",
+      `Party Name: ${orderFrom}`,
+      "",
+    ];
 
-  // Process regular orders by category
-  const categories = ["TYRE", "TUBE", "AUTO_TUBE"] as const;
-  
-  for (const cat of categories) {
-    const categoryOrders = orders.filter(o => o.category === cat);
-    if (categoryOrders.length > 0) {
-      orderLines.push(`${cat.replace('_', ' ')}:`);
-      for (const order of categoryOrders) {
-        // Split the text to properly format with dash
-        const [itemPart, quantityPart] = order.text.split(' - ');
-        orderLines.push(`- ${itemPart} - ${quantityPart}`);
+    // Process regular orders by category
+    const categories = ["TYRE", "TUBE", "AUTO_TUBE"] as const;
+
+    for (const cat of categories) {
+      const categoryOrders = orders.filter(o => o.category === cat);
+      if (categoryOrders.length > 0) {
+        orderLines.push(`${cat.replace('_', ' ')}:`);
+        for (const order of categoryOrders) {
+          // Split the text to properly format with dash
+          const [itemPart, quantityPart] = order.text.split(' - ');
+          orderLines.push(`- ${itemPart} - ${quantityPart}`);
+        }
+        orderLines.push(""); // Empty line between categories
       }
-      orderLines.push(""); // Empty line between categories
     }
-  }
 
-  // Process promotional items
-  if (promos.length > 0) {
-    orderLines.push("PROMOTIONAL ITEMS:");
-    for (const promo of promos) {
-      orderLines.push(`- ${promo} - PROMO`);
+    // Process promotional items
+    if (promos.length > 0) {
+      orderLines.push("PROMOTIONAL ITEMS:");
+      for (const promo of promos) {
+        orderLines.push(`- ${promo} - PROMO`);
+      }
+      orderLines.push("");
     }
-    orderLines.push("");
-  }
 
-  // Add total items count
-  orderLines.push(`Total Items: ${orders.length}`);
+    // Add total items count
+    orderLines.push(`Total Items: ${orders.length}`);
 
-  // Create the final text
-  const orderText = orderLines.join("\n");
+    // Create the final text
+    const orderText = orderLines.join("\n");
 
-  // Try to copy to clipboard
-  try {
-    await navigator.clipboard.writeText(orderText);
-    alert("Order copied to clipboard!");
-  } catch (err) {
-    // Fallback method if clipboard API fails
+    // Try to copy to clipboard
     try {
-      const textArea = document.createElement("textarea");
-      textArea.value = orderText;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+      await navigator.clipboard.writeText(orderText);
       alert("Order copied to clipboard!");
-    } catch (fallbackErr) {
-      console.error("Copy failed:", fallbackErr);
-      alert("Failed to copy order. Please try again or copy manually.");
+    } catch (err) {
+      // Fallback method if clipboard API fails
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = orderText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert("Order copied to clipboard!");
+      } catch (fallbackErr) {
+        console.error("Copy failed:", fallbackErr);
+        alert("Failed to copy order. Please try again or copy manually.");
+      }
     }
-  }
-};
+  };
 
 
   // UI Components
@@ -444,14 +444,14 @@ export default function OrderPage() {
     onChange: (value: string) => void,
     disabled: boolean = false
   ) => (
-    <div className="flex-1">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="select-item">
+      <label className="select-label block font-medium text-gray-700">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full p-2 border rounded-md shadow-sm
-          ${disabled ? "bg-gray-100" : "bg-white"}
-          focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        className={`w-full border rounded-md shadow-sm
+        ${disabled ? "bg-gray-100" : "bg-white"}
+        focus:outline-none focus:ring-2 focus:ring-blue-500`}
         disabled={disabled}
       >
         {options.length > 0 ? (
@@ -466,6 +466,7 @@ export default function OrderPage() {
       </select>
     </div>
   );
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -501,7 +502,7 @@ export default function OrderPage() {
           {["TYRE", "TUBE", "AUTO_TUBE"].map((cat) => {
             const categoryOrders = orders.filter((o) => o.category === cat);
             if (categoryOrders.length === 0) return null;
-            
+
             return (
               <div key={cat} className="mb-6">
                 <h3 className="text-lg font-semibold mb-2 text-gray-800">
@@ -562,10 +563,10 @@ export default function OrderPage() {
       </div>
 
       {/* Order Form */}
-      <div className="border-t bg-white p-4 shadow-lg">
+      <div className="order-form-container">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {/* Category Selection */}
+          <div className="select-grid">
+            {/* Category and Brand row */}
             {renderSelect(
               "Category",
               category,
@@ -587,47 +588,55 @@ export default function OrderPage() {
               </>
             )}
 
-            {/* Quantity, Unit, and Boxed Selection */}
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity & Unit
+            {/* Quantity and Unit */}
+            <div className="select-item">
+              <label className="select-label block font-medium text-gray-700">
+                Quantity
               </label>
-              <div className="flex gap-2">
-                <select
-                  value={qty}
-                  onChange={(e) => setQty(e.target.value)}
-                  className="flex-1 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {Array.from({ length: 100 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1}</option>
-                  ))}
-                </select>
-                <select
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="flex-1 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="PCS">PCS</option>
-                  <option value="BDLS">BDLS</option>
-                  <option value="BGS">BGS</option>
-                </select>
-              </div>
-              <label className="flex items-center mt-2 space-x-2">
-                <input
-                  type="checkbox"
-                  checked={isBoxed}
-                  onChange={(e) => setIsBoxed(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Boxed</span>
+              <select
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                className="w-full border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {Array.from({ length: 100 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="select-item">
+              <label className="select-label block font-medium text-gray-700">
+                Unit
               </label>
+              <select
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                className="w-full border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="PCS">PCS</option>
+                <option value="BDLS">BDLS</option>
+                <option value="BGS">BGS</option>
+              </select>
             </div>
           </div>
 
+          {/* Boxed checkbox */}
+          <div className="px-2 py-1">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={isBoxed}
+                onChange={(e) => setIsBoxed(e.target.checked)}
+                className="rounded text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Boxed</span>
+            </label>
+          </div>
+
           {/* Promotional Items and Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="grid grid-cols-2 gap-2 p-2">
+            <div className="col-span-2">
+              <label className="select-label block font-medium text-gray-700 mb-1">
                 Promotional Items
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -651,22 +660,20 @@ export default function OrderPage() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={addOrder}
-                className="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={category !== "AUTO_TUBE" && (!prefix || !rim || !width || !type)}
-              >
-                Add to Order
-              </button>
-              <button
-                onClick={copyOrder}
-                className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={orders.length === 0 && promos.length === 0}
-              >
-                Copy Full Order
-              </button>
-            </div>
+            <button
+              onClick={addOrder}
+              className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              disabled={category !== "AUTO_TUBE" && (!prefix || !rim || !width || !type)}
+            >
+              Add to Order
+            </button>
+            <button
+              onClick={copyOrder}
+              className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              disabled={orders.length === 0 && promos.length === 0}
+            >
+              Copy Full Order
+            </button>
           </div>
         </div>
       </div>
