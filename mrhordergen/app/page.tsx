@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
+// Types
 interface Product {
   Type: "TYRE" | "TUBE";
   Item: string;
@@ -11,6 +12,7 @@ interface OrderItem {
   text: string;
 }
 
+// Constants
 const productData = [
   { Type: "TYRE", Item: "BICYCLE TYRE 12x1.75 MRH SPORTS SUP" },
   { Type: "TYRE", Item: "BICYCLE TYRE 12X2.35 MRH SPORTS SUP" },
@@ -255,6 +257,7 @@ const autoTubeSizes = [
 
 const promotionalItems = ["T-Shirts", "Notepads", "Pens", "Calenders", "Diaries"];
 
+// Utility Functions
 const parseSize = (item: string) => {
   const sizePart = item.split(" ").find((part) => part.match(/^\d{2}[xX]/));
   if (!sizePart) return { rim: "", width: "" };
@@ -263,6 +266,7 @@ const parseSize = (item: string) => {
 };
 
 export default function OrderPage() {
+  // State Management
   const [orderFrom, setOrderFrom] = useState("");
   const [showOrderFromDialog, setShowOrderFromDialog] = useState(true);
   const [category, setCategory] = useState<"TYRE" | "TUBE" | "AUTO_TUBE">("TYRE");
@@ -273,10 +277,11 @@ export default function OrderPage() {
   const [autoTubeSize, setAutoTubeSize] = useState(autoTubeSizes[0]);
   const [qty, setQty] = useState("1");
   const [unit, setUnit] = useState("PCS");
+  const [isBoxed, setIsBoxed] = useState(false);
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [promos, setPromos] = useState<string[]>([]);
 
-  // Filtered data calculations with logging
+  // Filtered Data Calculations
   const filteredProducts = productData.filter(
     (p) => p.Type === category && p.Item.startsWith(prefix)
   );
@@ -316,17 +321,9 @@ export default function OrderPage() {
     )
   ).filter(Boolean);
 
-  // Enhanced useEffect for state management
+  // Effects
   useEffect(() => {
     if (category === "AUTO_TUBE") return;
-
-    console.log('Current State:', { prefix, rim, width, type });
-    console.log('Available Options:', {
-      prefixes,
-      rimSizes,
-      widths,
-      types
-    });
 
     if (prefixes.length > 0 && !prefixes.includes(prefix)) {
       setPrefix(prefixes[0]);
@@ -351,9 +348,11 @@ export default function OrderPage() {
     }
   }, [category, prefixes, rimSizes, widths, types, prefix, rim, width, type]);
 
+  // Action Handlers
   const resetForm = () => {
     setQty("1");
     setUnit("PCS");
+    setIsBoxed(false);
     if (category === "AUTO_TUBE") {
       setAutoTubeSize(autoTubeSizes[0]);
     } else {
@@ -365,22 +364,16 @@ export default function OrderPage() {
   };
 
   const addOrder = () => {
-  let newOrder: OrderItem;
-  if (category === "AUTO_TUBE") {
-    newOrder = {
-      category,
-      text: `AUTO TUBE ${autoTubeSize} ${qty} ${unit}`,
-    };
-  } else {
-    newOrder = {
-      category,
-      text: `${prefix} ${category} ${rim}x${width} ${type} ${qty} ${unit}`,
-    };
-  }
-  setOrders([...orders, newOrder]);
-  resetForm();
-};
-
+    let text;
+    if (category === "AUTO_TUBE") {
+      text = `AUTO TUBE ${autoTubeSize} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
+    } else {
+      text = `${prefix} ${category} ${rim}x${width} ${type} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
+    }
+    
+    setOrders([...orders, { category, text }]);
+    resetForm();
+  };
 
   const copyOrder = async () => {
   const orderLines = [
@@ -389,43 +382,43 @@ export default function OrderPage() {
     "",
   ];
 
+  // Process regular orders by category
   const categories = ["TYRE", "TUBE", "AUTO_TUBE"] as const;
   
-  categories.forEach(cat => {
+  for (const cat of categories) {
     const categoryOrders = orders.filter(o => o.category === cat);
     if (categoryOrders.length > 0) {
       orderLines.push(`${cat.replace('_', ' ')}:`);
-      categoryOrders.forEach(order => {
-        // Split the text at the last space to separate quantity and unit
-        const lastSpaceIndex = order.text.lastIndexOf(' ');
-        const secondLastSpaceIndex = order.text.lastIndexOf(' ', lastSpaceIndex - 1);
-        
-        // Reconstruct the text with a dash before quantity
-        const itemPart = order.text.substring(0, secondLastSpaceIndex);
-        const quantityPart = order.text.substring(secondLastSpaceIndex + 1);
+      for (const order of categoryOrders) {
+        // Split the text to properly format with dash
+        const [itemPart, quantityPart] = order.text.split(' - ');
         orderLines.push(`- ${itemPart} - ${quantityPart}`);
-      });
+      }
       orderLines.push(""); // Empty line between categories
     }
-  });
+  }
 
+  // Process promotional items
   if (promos.length > 0) {
     orderLines.push("PROMOTIONAL ITEMS:");
-    promos.forEach(promo => {
+    for (const promo of promos) {
       orderLines.push(`- ${promo} - PROMO`);
-    });
+    }
     orderLines.push("");
   }
 
-  // Only count actual orders, not promotional items
+  // Add total items count
   orderLines.push(`Total Items: ${orders.length}`);
 
+  // Create the final text
   const orderText = orderLines.join("\n");
 
+  // Try to copy to clipboard
   try {
     await navigator.clipboard.writeText(orderText);
     alert("Order copied to clipboard!");
   } catch (err) {
+    // Fallback method if clipboard API fails
     try {
       const textArea = document.createElement("textarea");
       textArea.value = orderText;
@@ -442,7 +435,7 @@ export default function OrderPage() {
 };
 
 
-
+  // UI Components
   const renderSelect = (
     label: string,
     value: string,
@@ -450,47 +443,46 @@ export default function OrderPage() {
     onChange: (value: string) => void,
     disabled: boolean = false
   ) => (
-    <div>
-      <label className="block text-sm font-medium">{label}</label>
-      {options.length > 0 ? (
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`w-full p-2 border rounded ${
-            disabled ? "bg-gray-100" : ""
-          }`}
-          disabled={disabled}
-        >
-          {options.map((option) => (
+    <div className="flex-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full p-2 border rounded-md shadow-sm
+          ${disabled ? "bg-gray-100" : "bg-white"}
+          focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        disabled={disabled}
+      >
+        {options.length > 0 ? (
+          options.map((option) => (
             <option key={option} value={option}>
               {option}
             </option>
-          ))}
-        </select>
-      ) : (
-        <select disabled className="w-full p-2 border rounded bg-gray-100">
+          ))
+        ) : (
           <option>No options available</option>
-        </select>
-      )}
+        )}
+      </select>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Party Name Dialog */}
       {showOrderFromDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
             <h2 className="text-xl font-bold mb-4">Enter Party Name</h2>
             <input
               type="text"
               value={orderFrom}
               onChange={(e) => setOrderFrom(e.target.value)}
-              className="w-full p-2 border rounded mb-4"
+              className="w-full p-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter Party Name..."
             />
             <button
               onClick={() => setShowOrderFromDialog(false)}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
               Confirm
             </button>
@@ -498,199 +490,182 @@ export default function OrderPage() {
         </div>
       )}
 
+      {/* Main Content */}
       <div className="flex-1 overflow-auto p-4">
-        <h1 className="text-2xl font-bold mb-2">Order from Satvinder Singh</h1>
-        <h2 className="text-xl mb-4">Party Name: {orderFrom}</h2>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-2">Order from Satvinder Singh</h1>
+          <h2 className="text-xl mb-4 text-gray-600">Party Name: {orderFrom}</h2>
 
-        {/* Orders Display */}
-        {["TYRE", "TUBE", "AUTO_TUBE"].map((cat) => {
-          const categoryOrders = orders.filter((o) => o.category === cat);
-          if (categoryOrders.length === 0) return null;
-          
-          return (
-            <div key={cat} className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">
-                {cat.replace("_", " ")}
-              </h3>
-              {categoryOrders.map((order, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-2 border-b"
-                >
-                  <span>{order.text}</span>
-                  <button
-                    onClick={() =>
-                      setOrders(orders.filter((_, i) => i !== index))
-                    }
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove
-                  </button>
+          {/* Orders Display */}
+          {["TYRE", "TUBE", "AUTO_TUBE"].map((cat) => {
+            const categoryOrders = orders.filter((o) => o.category === cat);
+            if (categoryOrders.length === 0) return null;
+            
+            return (
+              <div key={cat} className="mb-6">
+                <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                  {cat.replace("_", " ")}
+                </h3>
+                <div className="bg-white rounded-lg shadow">
+                  {categoryOrders.map((order, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-3 border-b last:border-b-0"
+                    >
+                      <span>{order.text}</span>
+                      <button
+                        onClick={() => setOrders(orders.filter((_, i) => i !== index))}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          );
-        })}
-
-        {/* Empty State */}
-        {orders.length === 0 && promos.length === 0 && (
-          <p className="text-gray-500 text-center mt-8">No items added yet</p>
-        )}
-
-        {/* Promotional Items */}
-        {promos.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Promotional Items</h3>
-            {promos.map((promo, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center p-2 border-b text-gray-500"
-              >
-                <span>{promo} - PROMO</span>
-                <button
-                  onClick={() => setPromos(promos.filter((_, i) => i !== index))}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Remove
-                </button>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+
+          {/* Empty State */}
+          {orders.length === 0 && promos.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>No items added yet</p>
+            </div>
+          )}
+
+          {/* Promotional Items */}
+          {promos.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                Promotional Items
+              </h3>
+              <div className="bg-white rounded-lg shadow">
+                {promos.map((promo, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 border-b last:border-b-0"
+                  >
+                    <span>{promo} - PROMO</span>
+                    <button
+                      onClick={() => setPromos(promos.filter((_, i) => i !== index))}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Order Form */}
-      <div className="border-t p-4 bg-gray-50">
-        <div className="grid grid-cols-2 MOULDED:grid-cols-3 gap-4 mb-4">
-          {/* Category Selection */}
-          {renderSelect(
-            "Category",
-            category,
-            ["TYRE", "TUBE", "AUTO_TUBE"],
-            (value) => {
-              setCategory(value as "TYRE" | "TUBE" | "AUTO_TUBE");
-              resetForm();
-            }
-          )}
+      <div className="border-t bg-white p-4 shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            {/* Category Selection */}
+            {renderSelect(
+              "Category",
+              category,
+              ["TYRE", "TUBE", "AUTO_TUBE"],
+              (value) => {
+                setCategory(value as "TYRE" | "TUBE" | "AUTO_TUBE");
+                resetForm();
+              }
+            )}
 
-          {category === "AUTO_TUBE" ? (
-            renderSelect(
-              "Size",
-              autoTubeSize,
-              autoTubeSizes,
-              setAutoTubeSize
-            )
-          ) : (
-            <>
-              {renderSelect(
-                "Brand",
-                prefix,
-                prefixes,
-                (value) => {
-                  setPrefix(value);
-                  setRim("");
-                  setWidth("");
-                  setType("");
-                }
-              )}
-              {renderSelect(
-                "Rim",
-                rim,
-                rimSizes,
-                (value) => {
-                  setRim(value);
-                  setWidth("");
-                  setType("");
-                },
-                !prefix
-              )}
-              {renderSelect(
-                "Width",
-                width,
-                widths,
-                (value) => {
-                  setWidth(value);
-                  setType("");
-                },
-                !rim
-              )}
-              {renderSelect(
-                "Type",
-                type,
-                types,
-                setType,
-                !width
-              )}
-            </>
-          )}
+            {category === "AUTO_TUBE" ? (
+              renderSelect("Size", autoTubeSize, autoTubeSizes, setAutoTubeSize)
+            ) : (
+              <>
+                {renderSelect("Brand", prefix, prefixes, setPrefix)}
+                {renderSelect("Rim", rim, rimSizes, setRim, !prefix)}
+                {renderSelect("Width", width, widths, setWidth, !rim)}
+                {renderSelect("Type", type, types, setType, !width)}
+              </>
+            )}
 
-          {/* Quantity and Unit Selection */}
-          <div>
-            <label className="block text-sm font-medium">Qty/Unit</label>
-            <div className="flex gap-2">
-              <select
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
-                className="flex-1 p-2 border rounded"
-              >
-                {Array.from({ length: 100 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
-                  </option>
+            {/* Quantity, Unit, and Boxed Selection */}
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity & Unit
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={qty}
+                  onChange={(e) => setQty(e.target.value)}
+                  className="flex-1 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {Array.from({ length: 100 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </select>
+                <select
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  className="flex-1 p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="PCS">PCS</option>
+                  <option value="BDLS">BDLS</option>
+                  <option value="BGS">BGS</option>
+                </select>
+              </div>
+              <label className="flex items-center mt-2 space-x-2">
+                <input
+                  type="checkbox"
+                  checked={isBoxed}
+                  onChange={(e) => setIsBoxed(e.target.checked)}
+                  className="rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Boxed</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Promotional Items and Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Promotional Items
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {promotionalItems.map((item) => (
+                  <label key={item} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={promos.includes(item)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setPromos([...promos, item]);
+                        } else {
+                          setPromos(promos.filter((p) => p !== item));
+                        }
+                      }}
+                      className="rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm">{item}</span>
+                  </label>
                 ))}
-              </select>
-              <select
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="flex-1 p-2 border rounded"
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={addOrder}
+                className="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={category !== "AUTO_TUBE" && (!prefix || !rim || !width || !type)}
               >
-                <option value="PCS">PCS</option>
-                <option value="BDLS">BDLS</option>
-                <option value="BDLS">BGS</option>
-              </select>
+                Add to Order
+              </button>
+              <button
+                onClick={copyOrder}
+                className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={orders.length === 0 && promos.length === 0}
+              >
+                Copy Full Order
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* Promotional Items and Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Promotional Items</label>
-            <div className="grid grid-cols-2 gap-2">
-              {promotionalItems.map((item) => (
-                <label key={item} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={promos.includes(item)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setPromos([...promos, item]);
-                      } else {
-                        setPromos(promos.filter((p) => p !== item));
-                      }
-                    }}
-                  />
-                  <span>{item}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <button
-              onClick={addOrder}
-              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-              disabled={category !== "AUTO_TUBE" && (!prefix || !rim || !width || !type)}
-            >
-              Add to Order
-            </button>
-            <button
-              onClick={copyOrder}
-              className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-              disabled={orders.length === 0 && promos.length === 0}
-            >
-              Copy Full Order
-            </button>
           </div>
         </div>
       </div>
