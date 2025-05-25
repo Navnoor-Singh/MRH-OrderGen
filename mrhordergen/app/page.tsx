@@ -1,101 +1,150 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
+import { WheelPicker } from "react-ios-wheel-picker";
+import data from "../data/parsedData.json";
+
+const unique = (arr: string[]) => [...new Set(arr.filter(Boolean))];
+
+// Helper: breakdown from SKU pattern
+const getRimSizes = (items: string[]) => unique(items.map(i => i.match(/\b\d{2}\b/)?.[0] || ""));
+const getWidths = (items: string[]) => unique(items.map(i => i.match(/\b\d{2,3}(?=\s*MM)/)?.[0] || ""));
+const getPrefixes = (items: string[]) => unique(items.map(i => i.split(" ")[0]));
+const getTypes = (items: string[]) => unique(items.map(i => {
+  const parts = i.split(" ");
+  return parts.slice(3, -2).join(" ");
+}));
+
+const tyres = data.filter(d => d.Type === "TYRE").map(d => d.Item);
+const tubes = data.filter(d => d.Type === "TUBE").map(d => d.Item);
+
+const rimSizes = unique([...getRimSizes(tyres), ...getRimSizes(tubes)]);
+const widths = unique([...getWidths(tyres), ...getWidths(tubes)]);
+const types = unique([...getTypes(tyres), ...getTypes(tubes)]);
+const prefixes = unique([...getPrefixes(tyres), ...getPrefixes(tubes)]);
+
+const quantities = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
+const units = ["PCS", "BDLS"];
+const promoItems = ["T-Shirt", "Notepad", "Keychain"];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [category, setCategory] = useState<"TYRE" | "TUBE">("TYRE");
+  const [prefix, setPrefix] = useState(prefixes[0]);
+  const [rim, setRim] = useState(rimSizes[0]);
+  const [width, setWidth] = useState(widths[0]);
+  const [type, setType] = useState(types[0]);
+  const [qty, setQty] = useState("1");
+  const [unit, setUnit] = useState("PCS");
+  const [orders, setOrders] = useState<string[]>([]);
+  const [promos, setPromos] = useState<string[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const addOrder = () => {
+    const item = `${prefix} ${category} ${rim} ${width}MM ${type} ${qty} ${unit}`;
+    setOrders([...orders, item]);
+  };
+
+  const togglePromo = (item: string) => {
+    setPromos(prev =>
+      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+    );
+  };
+
+  const copyOrders = async () => {
+    const text = [...orders, ...promos].join("\n");
+    await navigator.clipboard.writeText(text);
+    alert("Order copied!");
+  };
+
+  return (
+    <div className="container">
+      <div className="orders">
+        <h3>Orders</h3>
+        <ul>
+          {orders.map((o, i) => (
+            <li key={i}>{o}</li>
+          ))}
+        </ul>
+        <div className="promo-section">
+          <h4>Promotional Items</h4>
+          {promoItems.map(item => (
+            <label key={item} className="promo-item">
+              <input
+                type="checkbox"
+                checked={promos.includes(item)}
+                onChange={() => togglePromo(item)}
+              />
+              {item}
+            </label>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <button className="copy-button" onClick={copyOrders}>
+          Copy Order
+        </button>
+      </div>
+
+      <div className="picker-section">
+        <div className="selectors">
+          <label>
+            Category
+            <WheelPicker
+              options={["TYRE", "TUBE"]}
+              selectedIndex={category === "TYRE" ? 0 : 1}
+              onChange={(v) => setCategory(v as "TYRE" | "TUBE")}
+            />
+          </label>
+          <label>
+            Prefix
+            <WheelPicker
+              options={prefixes}
+              selectedIndex={prefixes.indexOf(prefix)}
+              onChange={v => setPrefix(v)}
+            />
+          </label>
+          <label>
+            Rim Size
+            <WheelPicker
+              options={rimSizes}
+              selectedIndex={rimSizes.indexOf(rim)}
+              onChange={v => setRim(v)}
+            />
+          </label>
+          <label>
+            Width
+            <WheelPicker
+              options={widths}
+              selectedIndex={widths.indexOf(width)}
+              onChange={v => setWidth(v)}
+            />
+          </label>
+          <label>
+            Type
+            <WheelPicker
+              options={types}
+              selectedIndex={types.indexOf(type)}
+              onChange={v => setType(v)}
+            />
+          </label>
+          <label>
+            Quantity
+            <WheelPicker
+              options={quantities}
+              selectedIndex={parseInt(qty) - 1}
+              onChange={v => setQty(v)}
+            />
+          </label>
+          <label>
+            Unit
+            <WheelPicker
+              options={units}
+              selectedIndex={units.indexOf(unit)}
+              onChange={v => setUnit(v)}
+            />
+          </label>
+        </div>
+        <button className="copy-button" onClick={addOrder}>
+          Add to Order
+        </button>
+      </div>
     </div>
   );
 }
