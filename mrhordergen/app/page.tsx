@@ -88,16 +88,15 @@ const productData = [
   { Type: "TYRE", Item: "BICYCLE TYRE 26X4.00 NYLON" },
   { Type: "TYRE", Item: "BICYCLE TYRE 27x2.10 NYLON" },
   { Type: "TYRE", Item: "BICYCLE TYRE 29X2.10 NYLON" },
-  { Type: "TYRE", Item: "BICYCLE TYRE 700X23C NYLON" },
-  { Type: "TYRE", Item: "BICYCLE TYRE 700X28C" },
-  { Type: "TYRE", Item: "BICYCLE TYRE 700X32C NYLON" },
-  { Type: "TYRE", Item: "BICYCLE TYRE 700X35C NYLON" },
+  { Type: "TYRE", Item: "BICYCLE TYRE 700X23 NYLON" },
+  { Type: "TYRE", Item: "BICYCLE TYRE 700X28" },
+  { Type: "TYRE", Item: "BICYCLE TYRE 700X32 NYLON" },
+  { Type: "TYRE", Item: "BICYCLE TYRE 700X35 NYLON" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 26X2.35/40 A/V 48MM BOX" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 24X2.125 A/V 48MM" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 24X2.35/40 A/V 48MM" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 24X2.40" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 24X2.40 A/V 48MM" },
-  { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 24X2.40 A/V 48MM BOX" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 26X2.125 A/V 48MM" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 26X2.35/40" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 26X2.35/40 A/V 48MM" },
@@ -106,7 +105,7 @@ const productData = [
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 27x2.10 A/V 48MM" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 28X1.1/2 D/V 350GM" },
   { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 29X2.10 A/V 48MM" },
-  { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 700X35C A/V 48MM" },
+  { Type: "TUBE", Item: "BUTYL BICYCLE TUBE 700X35 A/V 48MM" },
   { Type: "TUBE", Item: "JOINTED BICYCLE TUBE 14X1.75 SILVER SUP" },
   { Type: "TUBE", Item: "JOINTED BICYCLE TUBE 16X2.125 SILVER SUP" },
   { Type: "TUBE", Item: "JOINTED BICYCLE TUBE 18X2.125 SILVER SUP" },
@@ -175,8 +174,8 @@ const productData = [
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 28X1.5 DUMDUM" },
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 28X1.5 SILVER SUP" },
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 29x2.10 48MM A/V BOX" },
-  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x23C A/V 48 MM BOX" },
-  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x35C A/V 48 MM BOX" },
+  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x23 A/V 48 MM BOX" },
+  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x35 A/V 48 MM BOX" },
   { Type: "TUBE", Item: "MOULDED RICKSHAW TUBE 28X1.5 DABANGG SUP" },
   { Type: "TUBE", Item: "MOULDED RICKSHAW TUBE 28X1.5 S.W. PLUS" },
   { Type: "TUBE", Item: "MOULDED RICKSHAW TUBE 28X1.5 SHEHZADA SUP" },
@@ -206,9 +205,9 @@ const productData = [
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 26X2.125 LONG VALVE" },
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 27x2.10 48MM A/V" },
   { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 26X2.10 48MM A/V" },
-  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x23C A/V 48MM" },
-  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x32C A/V 48 MM" },
-  { Type: "TUBE", Item: "MOULDED BICYCLETUBE 20X3.00 A/V 48MM BOX" },
+  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x23 A/V 48MM" },
+  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 700x32 A/V 48 MM" },
+  { Type: "TUBE", Item: "MOULDED BICYCLE TUBE 20X3.00 A/V 48MM BOX" },
   { Type: "TYRE", Item: "RICKSHAW TYRE 28X1.5 12 PLY SPORTS TT" },
   { Type: "TYRE", Item: "RICKSHAW TYRE 28X1.5 12 PLY SPORTS BT" },
   { Type: "TYRE", Item: "RICKSHAW TYRE 28X1.5 12PLY FORCE TT" },
@@ -259,12 +258,41 @@ const autoTubeSizes = [
 const promotionalItems = ["T-Shirts", "Notepads", "Pens", "Calenders", "Diaries"];
 
 // Utility Functions
-const parseSize = (item: string) => {
-  const sizePart = item.split(" ").find((part) => part.match(/^\d{2}[xX]/));
-  if (!sizePart) return { rim: "", width: "" };
-  const [rim, width] = sizePart.split(/x|X/i).map((s) => s.replace(/\D+$/, ""));
-  return { rim, width };
+// const parseSize = (item: string) => {
+//   const sizePart = item.split(" ").find((part) => part.match(/^\d{2}[xX]/));
+//   if (!sizePart) return { rim: "", width: "" };
+//   const [rim, width] = sizePart.split(/x|X/i).map((s) => s.replace(/\D+$/, ""));
+//   return { rim, width };
+// };
+
+  const parseSize = (item: string) => {
+  // First try to find standard format (rim x width)
+  let sizePart = item.split(" ").find((part) => part.match(/^\d{2}[xX]/));
+  
+  if (sizePart) {
+    // Standard format found (like 26X1.5)
+    const [rim, width] = sizePart.split(/x|X/i).map((s) => s.replace(/\D+$/, ""));
+    return { rim, width };
+  }
+
+  // If no standard format found, look for reverse format (width x rim)
+  sizePart = item.split(" ").find((part) => part.match(/^\d{3,}[xX]/));
+  
+  if (sizePart) {
+    // Reverse format found (like 700 series)
+    const parts = sizePart.split(/x|X/i);
+    if (parts.length === 2) {
+      // The part that's 3+ digits is the width, the 2-digit part is rim
+      const width = parts.find(p => p.length >= 3)?.replace(/\D+$/, "") || "";
+      const rim = parts.find(p => p.length < 3)?.replace(/\D+$/, "") || "";
+      return { rim, width };
+    }
+  }
+
+  // If no size format found at all
+  return { rim: "", width: "" };
 };
+
 
 export default function OrderPage() {
   // State Management
@@ -364,17 +392,31 @@ export default function OrderPage() {
     }
   };
 
+  
   const addOrder = () => {
-    let text;
-    if (category === "AUTO_TUBE") {
-      text = `AUTO TUBE ${autoTubeSize} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
-    } else {
-      text = `${prefix} ${category} ${rim}x${width} ${type} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
-    }
+  let text;
+  if (category === "AUTO_TUBE") {
+    text = `AUTO TUBE ${autoTubeSize} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
+  } else {
+    // Find the matching product
+    const product = filteredProducts.find(p => {
+      const parsed = parseSize(p.Item);
+      return parsed.rim === rim && parsed.width === width && p.Item.includes(type);
+    });
 
-    setOrders([...orders, { category, text }]);
-    resetForm();
-  };
+    if (product) {
+      // Remove just the prefix (like "BICYCLE") from the product name
+      const productNameWithoutPrefix = product.Item.replace(`${prefix} `, '');
+      text = `${prefix} ${productNameWithoutPrefix} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
+    } else {
+      // Fallback (shouldn't normally happen)
+      text = `${prefix} ${rim}x${width} ${type} - ${qty} ${unit}${isBoxed ? " (BOXED)" : ""}`;
+    }
+  }
+
+  setOrders([...orders, { category, text }]);
+  resetForm();
+};
 
   const copyOrder = async () => {
     const orderLines = [
